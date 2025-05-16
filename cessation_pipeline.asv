@@ -1,0 +1,58 @@
+%% Awareness Cessation Project
+% Mar 2025, Leila Salvesen
+% adapted from EEG03_DataProcessing [G. Bernardi]
+
+
+%% Initialization
+
+clear variables; close all; clc;
+
+addpath('C:\Users\Leila\Local\MATLAB\toolboxes\eeglab2025.0.0\');
+addpath('C:\Users\Leila\Local\MATLAB\toolboxes\fieldtrip-20240110\'); ft_defaults;
+addpath('C:\Users\Leila\Local\MATLAB\toolboxes\zapline-plus-main\');
+datapath = 'C:\Users\Leila\Local\CessationStudy\Raw\';
+
+replace_seed = 0; % Set to 1 to replace RNG, or 0 to use existing one (if present)
+
+
+%%% Me testing
+cfg = [];
+cfg.dataset ='C:\Users\Leila\Local\CessationStudy\Raw\Nap\DA_fullNAP_RAW.set';
+data_eeg = ft_preprocessing(cfg);
+
+
+%% Parameter Definition
+params.evaluationChannels = 1:64; % Exclude non EEG channels
+%params.recreference       = 257;   % Recording reference (excluded from bad-channel detection)   
+params.heogchannel       = 65;   % Vertical EOG channel (excluded from bad-channel detection)
+params.veogchannel       = 66;   % Vertical EOG channel (excluded from bad-channel detection)
+params.emgchannel       = 67;   % Vertical EOG channel (excluded from bad-channel detection)
+params.epochDur         = 30;     % Epoch duration in seconds
+params.highPassFilter     = 0.5;   % High-pass filter for ICA (0 = no filter)
+params.lowPassFilter      = 45;    % Low-pass filter for ICA (0 = no filter)
+params.resampleICA        = 0;     % Resample the data for ICA saves computation time (0 = no resampling)
+params.applyPCAtoICA      = 120;   % Dimensionality reduction prior to ICA (0 = no PCA)
+params.brainThrICA        = 0.25;  % Minimum IClabel threshold for defining an IC as brain
+params.brainNrtICA        = 0.80;  % Minimum ratio between brain and first noise IC
+params.badchanmaxICs      = 30;    % Number of ICs to consider when looking for bad channels (between 0=none and 1=all)
+params.badchanthrICA      = 0.80;  % Threshold for detecting bad channels based on ICA (0 = no detection)
+params.useICLoverride     = 1;     % Override ICL classification to keep/reject specific components (0 = no)
+
+%% Bad channel detection parameters
+params.badchandet.robustDeviationThreshold    = []; % Z score cutoff for robust channel deviation (default = 5)
+params.badchandet.highFrequencyNoiseThreshold = []; % Z score cutoff for SNR (signal above 50 Hz; default = 5)
+params.badchandet.correlationWindowSeconds    = []; % Correlation window size in seconds (default = 1 sec)
+params.badchandet.correlationThreshold        = []; % Correlation below which window is bad (default = 0.4)
+params.badchandet.badTimeThreshold            = []; % Cutoff fraction of bad corr windows (default = 0.01)
+params.badchandet.ransacSampleSize            = []; % Samples for computing ransac (default = 50)
+params.badchandet.ransacChannelFraction       = []; % Fraction of channels for robust reconstruction (default = 0.25)
+params.badchandet.ransacCorrelationThreshold  = []; % Cutoff correlation for abnormal wrt neighbors (default = 0.75)
+params.badchandet.ransacUnbrokenTime          = []; % Cutoff fraction of time channel can have poor ransac predictability (default = 0.4)
+params.badchandet.ransacWindowSeconds         = []; % Correlation window for ransac (default = 5 sec)
+
+
+
+%% File selection
+
+[filenames, filepath] = uigetfile([datapath,'*sleep_eeg.set'],'Select eeglab set file','MultiSelect','on');
+if ~iscell(filenames); temp{1} = filenames; clear filenames; filenames = temp; clear temp; end
