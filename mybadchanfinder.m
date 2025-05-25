@@ -72,7 +72,7 @@ signal = pop_reref(signal, []); % Average reference
 noisyIn.evaluationChannels = params.evaluationChannels;
 
 % Remove reference and auxiliary channels from evaluation channels if present
-channelFields = {'recreference', 'M1channel', 'M2channel', 'veogchannel', 'heogchannel', 'emgchannel'};
+channelFields = {'recref', 'veogchannel', 'heogchannel', 'emgchannel'}; %'M1channel', 'M2channel', 
 
 for i = 1:length(channelFields)
     chan = params.(channelFields{i});
